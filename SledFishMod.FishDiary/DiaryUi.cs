@@ -25,10 +25,13 @@ public class DiaryUi : MonoBehaviour
     public static void Open() { if (Instance != null && !Instance._panelOpen) Instance.TogglePanel(); }
 
     // ── State ─────────────────────────────────────────────────────────────
+    private Transform _canvasTransform;  // always-active canvas root
+    private GameObject _diaryGroup;     // backdrop + panel — toggled on open/close
     private GameObject _panel;
     private TextMeshProUGUI _headerText;
     private Transform _gridContent;
     private bool _panelOpen;
+    private GameObject _cornerButton;
 
     private FilterMode _filter = FilterMode.All;
     private enum FilterMode { All, Caught, Uncaught }
@@ -73,9 +76,74 @@ public class DiaryUi : MonoBehaviour
 
     private void Update()
     {
-        // Close diary with Escape
-        if (_panelOpen && Input.GetKeyDown(KeyCode.Escape))
+        // J to open/close, Escape to close
+        if (Input.GetKeyDown(KeyCode.J))
             TogglePanel();
+        else if (_panelOpen && Input.GetKeyDown(KeyCode.Escape))
+            TogglePanel();
+    }
+
+    // ── Corner button ─────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Adds a small "Fish Diary [J]" button in the bottom-left of the screen.
+    /// Called by MenuPatch after UiReferenceController.Start fires.
+    /// Safe to call more than once — ignored after first call.
+    /// </summary>
+    public void ShowCornerButton()
+    {
+        if (_cornerButton != null) return;
+
+        _cornerButton = CreateRectChild(_canvasTransform, "DiaryCornerBtn");
+        var rt = _cornerButton.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0, 0);
+        rt.anchorMax = new Vector2(0, 0);
+        rt.pivot     = new Vector2(0, 0);
+        rt.anchoredPosition = new Vector2(12, 12);
+        rt.sizeDelta = new Vector2(130, 34);
+
+        var img = _cornerButton.AddComponent<Image>();
+        img.color = new Color(0.10f, 0.18f, 0.28f, 0.85f);
+
+        var btn = _cornerButton.AddComponent<Button>();
+        var colors = btn.colors;
+        colors.highlightedColor = new Color(0.20f, 0.35f, 0.55f, 1f);
+        colors.pressedColor     = new Color(0.08f, 0.14f, 0.22f, 1f);
+        btn.colors = colors;
+        btn.onClick.AddListener(new Action(TogglePanel));
+
+        // Icon (if sprite loaded)
+        var sprite = LoadDiarySprite();
+        float labelOffsetX = 8f;
+        if (sprite != null)
+        {
+            var iconGo = CreateRectChild(_cornerButton.transform, "Icon");
+            var irt = iconGo.GetComponent<RectTransform>();
+            irt.anchorMin = new Vector2(0, 0);
+            irt.anchorMax = new Vector2(0, 1);
+            irt.offsetMin = new Vector2(5, 4);
+            irt.offsetMax = new Vector2(29, -4);
+            var iImg = iconGo.AddComponent<Image>();
+            iImg.sprite = sprite;
+            iImg.preserveAspect = true;
+            labelOffsetX = 32f;
+        }
+
+        // Label
+        var lblGo = CreateRectChild(_cornerButton.transform, "Label");
+        var lrt = lblGo.GetComponent<RectTransform>();
+        lrt.anchorMin = new Vector2(0, 0);
+        lrt.anchorMax = new Vector2(1, 1);
+        lrt.offsetMin = new Vector2(labelOffsetX, 0);
+        lrt.offsetMax = new Vector2(-4, 0);
+        var lbl = lblGo.AddComponent<TextMeshProUGUI>();
+        lbl.text = "Fish Diary  [J]";
+        lbl.fontSize = 11;
+        lbl.color = new Color(0.85f, 0.92f, 1f);
+        lbl.alignment = TextAlignmentOptions.MidlineLeft;
+
+        // Canvas is already active (only _diaryGroup toggles), so corner button is immediately visible.
+        Plugin.Log.LogInfo("[FishDiary] Corner button shown.");
     }
 
     // ── Panel construction ────────────────────────────────────────────────
@@ -92,9 +160,15 @@ public class DiaryUi : MonoBehaviour
 
         canvasGo.AddComponent<CanvasScaler>();
         canvasGo.AddComponent<GraphicRaycaster>();
+        _canvasTransform = canvasGo.transform;
+
+        // Diary overlay group — contains the backdrop and panel.
+        // Canvas is always active (hosts the corner button too), only this group toggles.
+        _diaryGroup = CreateRectChild(canvasGo.transform, "DiaryGroup");
+        StretchFull(_diaryGroup.GetComponent<RectTransform>());
 
         // Semi-transparent backdrop (blocks input to game while diary is open)
-        var backdropGo = CreateRectChild(canvasGo.transform, "Backdrop");
+        var backdropGo = CreateRectChild(_diaryGroup.transform, "Backdrop");
         StretchFull(backdropGo.GetComponent<RectTransform>());
         var backdropImg = backdropGo.AddComponent<Image>();
         backdropImg.color = new Color(0, 0, 0, 0.70f);
@@ -102,7 +176,7 @@ public class DiaryUi : MonoBehaviour
             .AddListener(new Action(TogglePanel));
 
         // Main panel
-        _panel = CreateRectChild(canvasGo.transform, "DiaryPanel");
+        _panel = CreateRectChild(_diaryGroup.transform, "DiaryPanel");
         SetAnchored(_panel.GetComponent<RectTransform>(), 0.5f, 0.5f, 0.5f, 0.5f);
         _panel.GetComponent<RectTransform>().sizeDelta = new Vector2(900, 640);
         var panelImg = _panel.AddComponent<Image>();
@@ -189,8 +263,8 @@ public class DiaryUi : MonoBehaviour
         scrollRect.content = contentRt;
         _gridContent = contentGo.transform;
 
-        // Start hidden
-        canvasGo.SetActive(false);
+        // Diary group starts hidden; canvas stays active so the corner button is always visible
+        _diaryGroup.SetActive(false);
         _panelOpen = false;
     }
 
@@ -199,8 +273,7 @@ public class DiaryUi : MonoBehaviour
     private void TogglePanel()
     {
         _panelOpen = !_panelOpen;
-        // The canvas is the first child of this host object
-        transform.GetChild(0).gameObject.SetActive(_panelOpen);
+        _diaryGroup.SetActive(_panelOpen);
 
         if (_panelOpen)
         {
