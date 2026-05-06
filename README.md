@@ -79,9 +79,29 @@ BepInEx/plugins/
 
 ### Images
 
-- PNG format, any size (will be scaled in-game)
-- Named to match `{Name}.png` by default (spaces replaced with underscores)
-- Or specify a custom filename with the `"image"` field
+Place PNG files in the `FishImages/` folder inside your pack. By default the mod looks for a file named after your fish (spaces replaced with underscores):
+
+| Fish name in JSON | Default image filename |
+|-------------------|----------------------|
+| `"Space Bass"` | `FishImages/Space_Bass.png` |
+| `"Man O' War"` | `FishImages/Man_O_War.png` |
+
+If you want to use a different filename, add an `"image"` field:
+
+```json
+{
+  "guid": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+  "name": "Space Bass",
+  "image": "spacebass.png",
+  ...
+}
+```
+
+**Tips:**
+- PNG format only, any resolution (the game scales it automatically)
+- Transparent backgrounds work and look best
+- If no image is found the fish will still spawn — it just won't have a sprite
+- Free fish sprites: [game-icons.net](https://game-icons.net/tags/fish.html) (CC Attribution) or [openclipart.org](https://openclipart.org) (Public Domain)
 
 ### GUIDs
 
