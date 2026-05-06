@@ -1,7 +1,7 @@
 {
   "name": "SledFishMod",
   "version_number": "1.0.0",
-  "website_url": "",
+  "website_url": "https://github.com/jirachaiii/SledFishMod",
   "description": "Framework for adding custom fish to Sledding Game. Drop any fish pack folder into BepInEx/plugins — no code required. Make your own packs with just JSON and PNG images.",
   "dependencies": []
 }
