@@ -1,0 +1,9 @@
+{
+  "name": "WebFishingFishPack",
+  "version_number": "1.0.0",
+  "website_url": "",
+  "description": "Adds 77 catchable species from WEBFISHING — fish, sea creatures, prehistoric beasts, and glorious junk. All shiny-eligible. Requires SledFishMod.",
+  "dependencies": [
+    "Jirachai-SledFishMod-1.0.0"
+  ]
+}

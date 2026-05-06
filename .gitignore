@@ -1,0 +1,17 @@
+# Build output
+bin/
+obj/
+
+# Thunderstore zips
+*.zip
+
+# Visual Studio
+.vs/
+*.user
+
+# Rider
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
