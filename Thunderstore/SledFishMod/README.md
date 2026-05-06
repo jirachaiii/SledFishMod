@@ -95,5 +95,5 @@ Adding more fish to the pool slightly reduces every fish's individual catch rate
 
 ## Compatibility
 
-- Requires **BepInEx** (IL2CPP build)
+- Requires **BepInEx 6.0.0-be.755** (IL2CPP build) — [download here](https://builds.bepinex.dev/projects/bepinex_be/755/BepInEx-Unity.IL2CPP-win-x64-6.0.0-be.755+3fab71a.zip)
 - Compatible with multiplayer — all players must have the same packs installed

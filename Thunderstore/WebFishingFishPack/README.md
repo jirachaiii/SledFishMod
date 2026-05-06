@@ -43,6 +43,11 @@ Bluegill, Bone, Branch, Carp, Clownfish, Crappie, Drink Rings, Goldfish, Guppy, 
 
 ---
 
+## Requirements
+
+- [SledFishMod](https://thunderstore.io/c/sledding-game/p/Jirachai/SledFishMod/) — the framework this pack runs on
+- [BepInEx 6.0.0-be.755](https://builds.bepinex.dev/projects/bepinex_be/755/BepInEx-Unity.IL2CPP-win-x64-6.0.0-be.755+3fab71a.zip) (IL2CPP build)
+
 ## Multiplayer
 
 Everyone on the server must have this pack installed for custom fish to appear correctly.
