@@ -2,25 +2,29 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <AssemblyName>SledFishMod</AssemblyName>
-    <RootNamespace>SledFishMod</RootNamespace>
+    <AssemblyName>SledFishMod.FishDiary</AssemblyName>
+    <RootNamespace>SledFishMod.FishDiary</RootNamespace>
     <Nullable>disable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <NoWarn>CS0108</NoWarn>
-    <!-- Prevent the SDK glob from picking up files inside the nested FishDiary project -->
-    <DefaultItemExcludes>$(DefaultItemExcludes);SledFishMod.FishDiary\**</DefaultItemExcludes>
   </PropertyGroup>
 
   <PropertyGroup>
     <GameDir>C:\Program Files (x86)\Steam\steamapps\common\Sledding Game</GameDir>
     <BepInExDir>$(GameDir)\BepInEx</BepInExDir>
-    <!-- Isolated libs folder — no Il2Cppmscorlib.dll so the compiler keeps standard .NET types -->
-    <LocalLibs>$(MSBuildProjectDirectory)\Libs</LocalLibs>
+    <!-- Shared Libs folder one level up (inside the repo root) -->
+    <LocalLibs>$(MSBuildProjectDirectory)\..\Libs</LocalLibs>
   </PropertyGroup>
 
+  <!-- Embed the diary button icon into the DLL -->
   <ItemGroup>
+    <EmbeddedResource Include="newspaper.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- BepInEx + Harmony -->
     <Reference Include="BepInEx.Core">
       <HintPath>$(LocalLibs)\BepInEx.Core.dll</HintPath>
       <Private>false</Private>
@@ -42,8 +46,7 @@
       <Private>false</Private>
     </Reference>
 
-    <!-- Il2Cppmscorlib needed to resolve FishData's base class chain,
-         aliased so it does NOT shadow System.Object or other standard types. -->
+    <!-- Il2Cppmscorlib aliased so it doesn't shadow standard .NET types -->
     <Reference Include="Il2Cppmscorlib">
       <HintPath>$(BepInExDir)\interop\Il2Cppmscorlib.dll</HintPath>
       <Private>false</Private>
@@ -51,7 +54,6 @@
     </Reference>
 
     <!-- Game interop assemblies -->
-
     <Reference Include="Assembly-CSharp">
       <HintPath>$(LocalLibs)\Assembly-CSharp.dll</HintPath>
       <Private>false</Private>
@@ -76,21 +78,33 @@
       <HintPath>$(LocalLibs)\FishNet.Runtime.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="UnityEngine.UIModule">
+      <HintPath>$(LocalLibs)\UnityEngine.UIModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>$(LocalLibs)\UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(LocalLibs)\UnityEngine.InputLegacyModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <!-- Reference SledFishMod — built as a ProjectReference so build order is correct -->
   </ItemGroup>
 
-  <!-- Copy built DLL, JSON, and fish images to BepInEx plugins folder after build -->
+  <!-- SledFishMod must build first; mark Private=false so its DLL is not bundled with ours -->
+  <ItemGroup>
+    <ProjectReference Include="..\SledFishMod.csproj">
+      <Private>false</Private>
+    </ProjectReference>
+  </ItemGroup>
+
+  <!-- After build: copy DLL to BepInEx/plugins so it auto-loads with the game -->
   <Target Name="CopyToPlugins" AfterTargets="Build">
     <Copy SourceFiles="$(OutputPath)$(AssemblyName).dll"
           DestinationFolder="$(BepInExDir)\plugins"
-          SkipUnchangedFiles="true" />
-    <Copy SourceFiles="$(MSBuildProjectDirectory)\Data\webfishing_fish.json"
-          DestinationFolder="$(BepInExDir)\plugins"
-          SkipUnchangedFiles="true" />
-    <ItemGroup>
-      <FishImages Include="$(MSBuildProjectDirectory)\Data\FishImages\*" />
-    </ItemGroup>
-    <Copy SourceFiles="@(FishImages)"
-          DestinationFolder="$(BepInExDir)\plugins\FishImages"
           SkipUnchangedFiles="true" />
   </Target>
 

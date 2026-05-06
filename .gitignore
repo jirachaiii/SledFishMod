@@ -1,6 +1,8 @@
 # Build output
 bin/
 obj/
+SledFishMod.FishDiary/bin/
+SledFishMod.FishDiary/obj/
 
 # Thunderstore zips
 *.zip
